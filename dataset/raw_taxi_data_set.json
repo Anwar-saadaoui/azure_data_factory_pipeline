@@ -1,0 +1,103 @@
+{
+	"name": "raw_taxi_data_set",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "raw_data_linked_service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "yellow_tripdata_long.parquet",
+				"folderPath": "yellow_tripdata",
+				"fileSystem": "raw"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "VendorID",
+				"type": "INT32"
+			},
+			{
+				"name": "tpep_pickup_datetime",
+				"type": "INT64"
+			},
+			{
+				"name": "tpep_dropoff_datetime",
+				"type": "INT64"
+			},
+			{
+				"name": "passenger_count",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "trip_distance",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "RatecodeID",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "store_and_fwd_flag",
+				"type": "UTF8"
+			},
+			{
+				"name": "PULocationID",
+				"type": "INT32"
+			},
+			{
+				"name": "DOLocationID",
+				"type": "INT32"
+			},
+			{
+				"name": "payment_type",
+				"type": "INT64"
+			},
+			{
+				"name": "fare_amount",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "extra",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "mta_tax",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "tip_amount",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "tolls_amount",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "improvement_surcharge",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "total_amount",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "congestion_surcharge",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "Airport_fee",
+				"type": "DOUBLE"
+			},
+			{
+				"name": "cbd_congestion_fee",
+				"type": "DOUBLE"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

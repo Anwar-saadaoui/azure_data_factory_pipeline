@@ -1,0 +1,139 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "raw_taxi_data_set",
+						"type": "DatasetReference"
+					},
+					"name": "rawtaxidata"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "output",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "window1"
+				},
+				{
+					"name": "filter2"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "filter3"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          VendorID as integer,",
+				"          tpep_pickup_datetime as long,",
+				"          tpep_dropoff_datetime as long,",
+				"          passenger_count as double,",
+				"          trip_distance as double,",
+				"          RatecodeID as double,",
+				"          store_and_fwd_flag as string,",
+				"          PULocationID as integer,",
+				"          DOLocationID as integer,",
+				"          payment_type as long,",
+				"          fare_amount as double,",
+				"          extra as double,",
+				"          mta_tax as double,",
+				"          tip_amount as double,",
+				"          tolls_amount as double,",
+				"          improvement_surcharge as double,",
+				"          total_amount as double,",
+				"          congestion_surcharge as double,",
+				"          Airport_fee as double,",
+				"          cbd_congestion_fee as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> rawtaxidata",
+				"rawtaxidata filter(!(trip_distance <= 0 || fare_amount <= 0 || passenger_count == 0)) ~> filter1",
+				"filter1 window(over(VendorID,",
+				"          tpep_pickup_datetime,",
+				"          tpep_dropoff_datetime,",
+				"          PULocationID,",
+				"          DOLocationID),",
+				"     asc(tpep_pickup_datetime, true),",
+				"     row_num = rowNumber()) ~> window1",
+				"window1 filter(row_num == 1) ~> filter2",
+				"filter2 select(mapColumn(",
+				"          VendorID,",
+				"          tpep_pickup_datetime,",
+				"          tpep_dropoff_datetime,",
+				"          passenger_count,",
+				"          trip_distance,",
+				"          RatecodeID,",
+				"          store_and_fwd_flag,",
+				"          PULocationID,",
+				"          DOLocationID,",
+				"          payment_type,",
+				"          fare_amount,",
+				"          extra,",
+				"          mta_tax,",
+				"          tip_amount,",
+				"          tolls_amount,",
+				"          improvement_surcharge,",
+				"          total_amount,",
+				"          congestion_surcharge,",
+				"          Airport_fee,",
+				"          cbd_congestion_fee",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(tpep_pickup_datetime = toTimestamp(tpep_pickup_datetime),",
+				"          tpep_dropoff_datetime = toTimestamp(tpep_dropoff_datetime),",
+				"          fare_amount = toDecimal(fare_amount, 10, 2),",
+				"          extra = toDecimal(extra, 10, 2),",
+				"          mta_tax = toDecimal(mta_tax, 10, 2),",
+				"          tip_amount = toDecimal(tip_amount, 10, 2),",
+				"          tolls_amount = toDecimal(tolls_amount, 10, 2),",
+				"          improvement_surcharge = toDecimal(improvement_surcharge, 10, 2),",
+				"          total_amount = toDecimal(total_amount, 10, 2),",
+				"          congestion_surcharge = toDecimal(congestion_surcharge, 10, 2),",
+				"          Airport_fee = toDecimal(Airport_fee, 10, 2),",
+				"          cbd_congestion_fee = toDecimal(cbd_congestion_fee, 10, 2)) ~> derivedColumn1",
+				"derivedColumn1 derive(passenger_count = iif(isNull(passenger_count), 1L, toLong(passenger_count))) ~> derivedColumn2",
+				"derivedColumn2 derive(revenue = fare_amount + tip_amount + tolls_amount + extra + mta_tax + improvement_surcharge + congestion_surcharge + Airport_fee + cbd_congestion_fee) ~> derivedColumn3",
+				"derivedColumn3 filter(tpep_dropoff_datetime > tpep_pickup_datetime",
+				"&& trip_distance > 0 && trip_distance < 100",
+				"&& fare_amount > 0) ~> filter3",
+				"filter3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     filePattern:'part-[n].parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}
